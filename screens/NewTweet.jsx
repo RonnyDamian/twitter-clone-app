@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
+import axios from "axios";
 
 export default function NewTweet({ navigation }) {
-  const [tweet, setTweet] = useState("");
+  const [tweet, setTweet] = useState;
 
   function sendTweet() {
     navigation.navigate("Tab");

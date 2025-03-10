@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Button,
   FlatList,
   Image,
@@ -18,6 +19,8 @@ import formatDistance from "../helpers/formatDistanceCustom";
 
 export default function HomeScreen({ navigation }) {
   const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     getAllTweets();
@@ -27,11 +30,20 @@ export default function HomeScreen({ navigation }) {
     axios
       .get("http://172.16.3.215:8000/api/tweets")
       .then((response) => {
+        setIsLoading(false);
+        setIsRefreshing(false);
         setData(response.data);
       })
       .catch((error) => {
+        setIsLoading(false);
+        setIsRefreshing(false);
         console.log(error);
       });
+  }
+
+  function handleRefresh() {
+    setIsRefreshing(true);
+    getAllTweets();
   }
 
   function goToProfile() {
@@ -77,12 +89,7 @@ export default function HomeScreen({ navigation }) {
             style={styles.tweetContentContainer}
             onPress={() => goToSigleScreen()}
           >
-            <Text style={styles.tweetContent}>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Cupiditate corporis magnam corrupti nam accusamus pariatur magni,
-              nesciunt ex quam possimus, blanditiis quidem sint repellat
-              excepturi! Voluptas perferendis similique laborum libero?
-            </Text>
+            <Text style={styles.tweetContent}>{tweet.body}</Text>
           </TouchableOpacity>
           <View style={styles.tweetEngagement}>
             <TouchableOpacity style={styles.flexRow}>
@@ -129,14 +136,20 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        ItemSeparatorComponent={() => (
-          <View style={styles.tweetSeparator}></View>
-        )}
-      />
+      {isLoading ? (
+        <ActivityIndicator style={styles.preloader} size="large" color="gray" />
+      ) : (
+        <FlatList
+          data={data}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          ItemSeparatorComponent={() => (
+            <View style={styles.tweetSeparator}></View>
+          )}
+          refreshing={isRefreshing}
+          onRefresh={handleRefresh}
+        />
+      )}
 
       <TouchableOpacity
         style={styles.floatingButton}
@@ -206,5 +219,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 20,
     right: 12,
+  },
+  preloader: {
+    marginTop: 25,
   },
 });
