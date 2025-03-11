@@ -6,75 +6,115 @@ import {
   TouchableOpacity,
   Image,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 
 import Entypo from "@expo/vector-icons/Entypo";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
+import axios from "../helpers/axiosConfig";
+import { format } from "date-fns";
 
-export default function TweetScreen({ navigation }) {
+export default function TweetScreen({ navigation, route }) {
+  const [tweet, setTweet] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    getTweet();
+  }, []);
+
+  function getTweet() {
+    axios
+      .get(`/tweets/${route.params.tweetId}`)
+      .then((response) => {
+        setTweet(response.data);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        setIsLoading(false);
+        console.log(error);
+      });
+  }
+
   function goToProfile() {
     navigation.navigate("Profile Screen");
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.profileContainer}>
-        <TouchableOpacity style={styles.flexRow} onPress={() => goToProfile()}>
-          <Image
-            style={styles.avatar}
-            source={{ uri: "https://reactnative.dev/img/tiny_logo.png" }}
-          />
-          <View>
-            <Text style={styles.tweetName}>Ronny Rodriguez</Text>
-            <Text style={styles.tweetHandle}>@rrodriguez</Text>
+      {isLoading ? (
+        <ActivityIndicator style={styles.preloader} size="large" color="gray" />
+      ) : (
+        <>
+          <View style={styles.profileContainer}>
+            <TouchableOpacity
+              style={styles.flexRow}
+              onPress={() => goToProfile()}
+            >
+              <Image
+                style={styles.avatar}
+                source={{ uri: "https://reactnative.dev/img/tiny_logo.png" }}
+              />
+              <View>
+                <Text style={styles.tweetName}>{tweet.user.name}</Text>
+                <Text style={styles.tweetHandle}>@{tweet.user.username}</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Entypo name="dots-three-vertical" size={24} color="gray" />
+            </TouchableOpacity>
           </View>
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <Entypo name="dots-three-vertical" size={24} color="gray" />
-        </TouchableOpacity>
-      </View>
 
-      <View style={styles.tweetContentContainer}>
-        <Text style={styles.tweetContent}>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Consectetur
-          eum dignissimos, rerum adipisci natus laudantium aut, ullam totam
-          exercitationem ut, earum accusantium in pariatur dolor molestias neque
-          sint culpa nihil!
-        </Text>
-      </View>
+          <View style={styles.tweetContentContainer}>
+            <Text style={styles.tweetContent}>{tweet.body}</Text>
+            <View style={styles.tweetTimestampContainer}>
+              <Text style={styles.tweetTimestampText}>
+                {format(new Date(tweet.created_at), "h:mm a")}
+              </Text>
+              <Text style={styles.tweetTimestampText}>&middot;</Text>
+              <Text style={styles.tweetTimestampText}>
+                {format(new Date(tweet.created_at), "d MMM.yy")}
+              </Text>
+              <Text style={styles.tweetTimestampText}>&middot;</Text>
+              <Text style={[styles.tweetTimestampText, styles.linkColor]}>
+                X for Iphone
+              </Text>
+            </View>
+          </View>
 
-      <View style={styles.tweetEngagement}>
-        <View style={styles.flexRow}>
-          <Text style={styles.tweetEngagementNumber}>624</Text>
-          <Text style={styles.tweetEngagementLabel}>Retweets</Text>
-        </View>
-        <View style={styles.flexRow}>
-          <Text style={styles.tweetEngagementNumber}>624</Text>
-          <Text style={styles.tweetEngagementLabel}>Retweets</Text>
-        </View>
-        <View style={styles.flexRow}>
-          <Text style={styles.tweetEngagementNumber}>624</Text>
-          <Text style={styles.tweetEngagementLabel}>Retweets</Text>
-        </View>
-      </View>
-      <View style={styles.tweetEngagementIcon}>
-        <TouchableOpacity style={styles.flexRow}>
-          <EvilIcons name="comment" size={28} color="gray" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.flexRow}>
-          <EvilIcons name="retweet" size={28} color="gray" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.flexRow}>
-          <EvilIcons name="heart" size={28} color="gray" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.flexRow}>
-          <EvilIcons
-            name={Platform.OS === "ios" ? "share-apple" : "share-google"}
-            size={28}
-            color="gray"
-          />
-        </TouchableOpacity>
-      </View>
+          <View style={styles.tweetEngagement}>
+            <View style={styles.flexRow}>
+              <Text style={styles.tweetEngagementNumber}>624</Text>
+              <Text style={styles.tweetEngagementLabel}>Retweets</Text>
+            </View>
+            <View style={styles.flexRow}>
+              <Text style={styles.tweetEngagementNumber}>624</Text>
+              <Text style={styles.tweetEngagementLabel}>Retweets</Text>
+            </View>
+            <View style={styles.flexRow}>
+              <Text style={styles.tweetEngagementNumber}>624</Text>
+              <Text style={styles.tweetEngagementLabel}>Retweets</Text>
+            </View>
+          </View>
+          <View style={styles.tweetEngagementIcon}>
+            <TouchableOpacity style={styles.flexRow}>
+              <EvilIcons name="comment" size={28} color="gray" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.flexRow}>
+              <EvilIcons name="retweet" size={28} color="gray" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.flexRow}>
+              <EvilIcons name="heart" size={28} color="gray" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.flexRow}>
+              <EvilIcons
+                name={Platform.OS === "ios" ? "share-apple" : "share-google"}
+                size={28}
+                color="gray"
+              />
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -141,5 +181,16 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
+  },
+  tweetTimestampContainer: {
+    flexDirection: "row",
+    marginTop: 12,
+  },
+  tweetTimestampText: {
+    color: "gray",
+    marginRight: 8,
+  },
+  linkColor: {
+    color: "#1d9bf1",
   },
 });

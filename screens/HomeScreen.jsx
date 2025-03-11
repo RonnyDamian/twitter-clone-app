@@ -12,10 +12,10 @@ import {
 } from "react-native";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import axios from "axios";
 import { formatDistanceToNowStrict } from "date-fns";
 import locale from "date-fns/locale/en-US";
 import formatDistance from "../helpers/formatDistanceCustom";
+import axios from "../helpers/axiosConfig";
 
 export default function HomeScreen({ navigation }) {
   const [data, setData] = useState([]);
@@ -30,7 +30,7 @@ export default function HomeScreen({ navigation }) {
 
   function getAllTweets() {
     axios
-      .get(`http://172.16.3.215:8000/api/tweets?page=${page}`)
+      .get(`/tweets?page=${page}`)
       .then((response) => {
         if (page === 1) {
           setData(response.data.data);
@@ -40,6 +40,8 @@ export default function HomeScreen({ navigation }) {
 
         if (!response.data.next_page_url) {
           setIsAtEndOfScrolling(true);
+        } else {
+          setIsAtEndOfScrolling(false);
         }
 
         setIsLoading(false);
@@ -67,8 +69,8 @@ export default function HomeScreen({ navigation }) {
     navigation.navigate("Profile Screen");
   }
 
-  function goToSigleScreen() {
-    navigation.navigate("Tweet Screen");
+  function goToSigleScreen(tweetId) {
+    navigation.navigate("Tweet Screen", { tweetId: tweetId });
   }
 
   function goToNewTweet() {
@@ -84,7 +86,7 @@ export default function HomeScreen({ navigation }) {
         <View style={{ flex: 1 }}>
           <TouchableOpacity
             style={styles.flexRow}
-            onPress={() => goToSigleScreen()}
+            onPress={() => goToSigleScreen(tweet.id)}
           >
             <Text style={styles.tweetName} numberOfLines={1}>
               {tweet.user.name}
@@ -104,7 +106,7 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.tweetContentContainer}
-            onPress={() => goToSigleScreen()}
+            onPress={() => goToSigleScreen(tweet.id)}
           >
             <Text style={styles.tweetContent}>{tweet.body}</Text>
           </TouchableOpacity>
