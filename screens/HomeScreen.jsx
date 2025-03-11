@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Button,
@@ -15,21 +15,29 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { formatDistanceToNowStrict } from "date-fns";
 import locale from "date-fns/locale/en-US";
 import formatDistance from "../helpers/formatDistanceCustom";
-import axios from "../helpers/axiosConfig";
+import axiosConfig from "../helpers/axiosConfig";
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen({ navigation, route }) {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [isAtEndOfScrolling, setIsAtEndOfScrolling] = useState(false);
+  const flatListRef = useRef();
 
   useEffect(() => {
     getAllTweets();
   }, [page]);
 
+  useEffect(() => {
+    if (route.params?.newTweetAdded) {
+      getAllTweetsRefresh();
+      //flatListRef.current.scrollToOffset({ offset: 0 });
+    }
+  }, [route.params?.newTweetAdded]);
+
   function getAllTweets() {
-    axios
+    axiosConfig
       .get(`/tweets?page=${page}`)
       .then((response) => {
         if (page === 1) {
@@ -44,6 +52,25 @@ export default function HomeScreen({ navigation }) {
           setIsAtEndOfScrolling(false);
         }
 
+        setIsLoading(false);
+        setIsRefreshing(false);
+      })
+      .catch((error) => {
+        setIsLoading(false);
+        setIsRefreshing(false);
+        console.log(error);
+      });
+  }
+
+  function getAllTweetsRefresh() {
+    setPage(1);
+    setIsAtEndOfScrolling(false);
+    setIsRefreshing(false);
+
+    axiosConfig
+      .get(`/tweet`)
+      .then((response) => {
+        setData(response.data.data);
         setIsLoading(false);
         setIsRefreshing(false);
       })
@@ -159,6 +186,7 @@ export default function HomeScreen({ navigation }) {
         <ActivityIndicator style={styles.preloader} size="large" color="gray" />
       ) : (
         <FlatList
+          //ref={flatListRef}
           data={data}
           renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}

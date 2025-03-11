@@ -11,7 +11,7 @@ import {
 
 import Entypo from "@expo/vector-icons/Entypo";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
-import axios from "../helpers/axiosConfig";
+import axiosConfig from "../helpers/axiosConfig";
 import { format } from "date-fns";
 
 export default function TweetScreen({ navigation, route }) {
@@ -23,7 +23,7 @@ export default function TweetScreen({ navigation, route }) {
   }, []);
 
   function getTweet() {
-    axios
+    axiosConfig
       .get(`/tweets/${route.params.tweetId}`)
       .then((response) => {
         setTweet(response.data);
