@@ -54,7 +54,7 @@ export default function TweetScreen({ navigation, route }) {
             >
               <Image
                 style={styles.avatar}
-                source={{ uri: "https://reactnative.dev/img/tiny_logo.png" }}
+                source={{ uri: tweet.user.avatar }}
               />
               <View>
                 <Text style={styles.tweetName}>{tweet.user.name}</Text>

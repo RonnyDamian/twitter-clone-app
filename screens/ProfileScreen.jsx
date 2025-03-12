@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState } from "react";
 import {
   FlatList,
   Image,
@@ -11,6 +11,7 @@ import {
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import axiosConfig from "../helpers/axiosConfig";
 import { format } from "date-fns";
+import { useFocusEffect } from "@react-navigation/native";
 
 const DATA = [
   {
@@ -49,25 +50,49 @@ const renderItem = ({ item }) => {
 
 export default function ProfileScreen({ navigation, route }) {
   const [user, setUser] = useState(null);
+  
 
   useEffect(() => {
     getUserProfile();
   }, []);
 
+
+  
   function getUserProfile() {
+     
     axiosConfig
       .get(`users/${route.params.userId}`)
       .then((response) => {
+        console.log("Respuesta de la API:", response.data.name); // Verifica qué devuelve la API
+        if (!response.data || Object.keys(response.data).length === 0) {
+          console.error("Error: La API devolvió un objeto vacío o incorrecto.");
+          return;
+        }
         setUser(response.data);
       })
       .catch((error) => {
         console.log(error);
+        
       });
   }
 
   const profileHeader = () => (
     <View style={styles.container}>
       <Image
+        style={styles.backgroundImage}
+        source={{
+          uri: "https://images.unsplash.com/photo-1557683316-973673baf926?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1080&q=80",
+        }}
+      />
+      <View style={styles.avatarContainer}>
+        <Text>{user.name}</Text>
+        {/* <Image style={styles.avatar} source={{ uri: user.avatar }} /> */}
+        <TouchableOpacity style={styles.followButton}>
+          <Text style={styles.followButtonText}>Follow</Text>
+        </TouchableOpacity>
+      </View>
+      
+    {/*   <Image
         style={styles.backgroundImage}
         source={{
           uri: "https://images.unsplash.com/photo-1557683316-973673baf926?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1080&q=80",
@@ -115,7 +140,7 @@ export default function ProfileScreen({ navigation, route }) {
         </Text>
         <Text>Followers</Text>
       </View>
-      <View style={styles.separator}></View>
+      <View style={styles.separator}></View> */}
     </View>
   );
 
